@@ -2,41 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* BenjaminAI Design System - $100 Bill Inspired */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* $100 Bill Color Palette */
+    --background: 130 15% 8%;
+    --foreground: 45 25% 85%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 130 20% 12%;
+    --card-foreground: 45 25% 85%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 130 25% 10%;
+    --popover-foreground: 45 25% 85%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Benjamin Franklin Green */
+    --primary: 130 35% 25%;
+    --primary-foreground: 45 25% 85%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Gold Accents */
+    --secondary: 45 85% 55%;
+    --secondary-foreground: 130 15% 8%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted Greens */
+    --muted: 130 15% 15%;
+    --muted-foreground: 45 15% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 45 75% 45%;
+    --accent-foreground: 130 15% 8%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 45 25% 85%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 130 15% 20%;
+    --input: 130 15% 15%;
+    --ring: 45 85% 55%;
 
     --radius: 0.5rem;
+
+    /* Custom Gradients */
+    --gradient-benjamin: linear-gradient(135deg, hsl(130 35% 25%), hsl(130 25% 15%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 85% 55%), hsl(45 75% 45%));
+    --gradient-overlay: linear-gradient(135deg, hsla(130 15% 8% / 0.95), hsla(130 25% 10% / 0.9));
+
+    /* Shadows */
+    --shadow-benjamin: 0 20px 40px -10px hsla(130 35% 25% / 0.3);
+    --shadow-gold: 0 10px 30px -5px hsla(45 85% 55% / 0.4);
+    --shadow-chat: 0 25px 50px -12px hsla(130 15% 8% / 0.8);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +117,73 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Benjamin Franklin Portrait Animation */
+  .benjamin-portrait {
+    @apply transition-transform ease-in-out;
+    transition-duration: 3000ms;
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  .benjamin-portrait:hover {
+    @apply scale-105;
+  }
+
+  /* Chat Overlay */
+  .chat-overlay {
+    background: var(--gradient-overlay);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-chat);
+  }
+
+  /* Gold Button */
+  .btn-gold {
+    background: var(--gradient-gold);
+    box-shadow: var(--shadow-gold);
+    transition: var(--transition-bounce);
+  }
+
+  .btn-gold:hover {
+    @apply scale-105 brightness-110;
+  }
+
+  /* Message Bubble */
+  .message-bubble {
+    @apply rounded-2xl px-4 py-3 max-w-[80%] break-words;
+    transition: var(--transition-smooth);
+  }
+
+  .message-user {
+    @apply bg-primary text-primary-foreground ml-auto;
+    box-shadow: var(--shadow-benjamin);
+  }
+
+  .message-ai {
+    @apply bg-card text-card-foreground mr-auto border border-border;
+  }
+}
+
+@layer utilities {
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
   }
 }
