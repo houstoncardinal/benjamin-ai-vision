@@ -7,52 +7,57 @@
 @layer base {
   :root {
     /* $100 Bill Color Palette */
-    --background: 130 15% 8%;
-    --foreground: 45 25% 85%;
+    --background: 130 20% 6%;
+    --foreground: 45 30% 90%;
 
-    --card: 130 20% 12%;
-    --card-foreground: 45 25% 85%;
+    --card: 130 25% 10%;
+    --card-foreground: 45 30% 90%;
 
-    --popover: 130 25% 10%;
-    --popover-foreground: 45 25% 85%;
+    --popover: 130 30% 8%;
+    --popover-foreground: 45 30% 90%;
 
     /* Benjamin Franklin Green */
-    --primary: 130 35% 25%;
-    --primary-foreground: 45 25% 85%;
+    --primary: 130 40% 30%;
+    --primary-foreground: 45 30% 90%;
 
-    /* Gold Accents */
-    --secondary: 45 85% 55%;
-    --secondary-foreground: 130 15% 8%;
+    /* Premium Gold Accents */
+    --secondary: 45 90% 60%;
+    --secondary-foreground: 130 20% 6%;
 
     /* Muted Greens */
-    --muted: 130 15% 15%;
-    --muted-foreground: 45 15% 65%;
+    --muted: 130 20% 12%;
+    --muted-foreground: 45 20% 70%;
 
-    --accent: 45 75% 45%;
-    --accent-foreground: 130 15% 8%;
+    --accent: 45 80% 50%;
+    --accent-foreground: 130 20% 6%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 45 25% 85%;
+    --destructive-foreground: 45 30% 90%;
 
-    --border: 130 15% 20%;
-    --input: 130 15% 15%;
-    --ring: 45 85% 55%;
+    --border: 130 20% 18%;
+    --input: 130 20% 12%;
+    --ring: 45 90% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* Custom Gradients */
-    --gradient-benjamin: linear-gradient(135deg, hsl(130 35% 25%), hsl(130 25% 15%));
-    --gradient-gold: linear-gradient(135deg, hsl(45 85% 55%), hsl(45 75% 45%));
-    --gradient-overlay: linear-gradient(135deg, hsla(130 15% 8% / 0.95), hsla(130 25% 10% / 0.9));
+    /* Premium Gradients */
+    --gradient-benjamin: linear-gradient(135deg, hsl(130 40% 30%), hsl(130 30% 18%), hsl(130 25% 10%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 65%), hsl(45 85% 55%), hsl(45 75% 45%));
+    --gradient-overlay: linear-gradient(135deg, hsla(130 20% 6% / 0.98), hsla(130 25% 8% / 0.95));
+    --gradient-money: linear-gradient(45deg, hsl(130 40% 30%), hsl(45 80% 50%), hsl(130 35% 25%));
+    --gradient-glow: radial-gradient(circle at center, hsla(45 90% 60% / 0.3), transparent 70%);
 
-    /* Shadows */
-    --shadow-benjamin: 0 20px 40px -10px hsla(130 35% 25% / 0.3);
-    --shadow-gold: 0 10px 30px -5px hsla(45 85% 55% / 0.4);
-    --shadow-chat: 0 25px 50px -12px hsla(130 15% 8% / 0.8);
+    /* Premium Shadows */
+    --shadow-benjamin: 0 25px 50px -15px hsla(130 40% 30% / 0.4);
+    --shadow-gold: 0 15px 35px -8px hsla(45 90% 60% / 0.5);
+    --shadow-chat: 0 30px 60px -15px hsla(130 20% 6% / 0.9);
+    --shadow-glow: 0 0 80px hsla(45 90% 60% / 0.2);
+    --shadow-inset: inset 0 1px 0 hsla(45 90% 60% / 0.1);
 
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Advanced Animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-elastic: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     --sidebar-background: 0 0% 98%;
 
@@ -123,59 +128,135 @@
 @layer components {
   /* Benjamin Franklin Portrait Animation */
   .benjamin-portrait {
-    @apply transition-transform ease-in-out;
-    transition-duration: 3000ms;
-    animation: breathe 4s ease-in-out infinite;
+    @apply transition-all ease-in-out;
+    transition-duration: 4000ms;
+    animation: breathe 6s ease-in-out infinite, float 8s ease-in-out infinite;
+    filter: contrast(125%) brightness(110%) saturate(130%);
   }
 
   .benjamin-portrait:hover {
-    @apply scale-105;
+    @apply scale-110;
+    filter: contrast(135%) brightness(120%) saturate(140%);
+    animation-play-state: paused;
   }
 
-  /* Chat Overlay */
+  /* Premium Chat Overlay */
   .chat-overlay {
     background: var(--gradient-overlay);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--shadow-chat);
+    backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: var(--shadow-chat), var(--shadow-inset);
+    border: 1px solid hsla(45 90% 60% / 0.1);
   }
 
-  /* Gold Button */
+  /* Premium Gold Button */
   .btn-gold {
     background: var(--gradient-gold);
-    box-shadow: var(--shadow-gold);
-    transition: var(--transition-bounce);
+    box-shadow: var(--shadow-gold), var(--shadow-inset);
+    transition: var(--transition-elastic);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-gold::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsla(45 100% 80% / 0.3), transparent);
+    transition: left 0.6s;
   }
 
   .btn-gold:hover {
-    @apply scale-105 brightness-110;
+    @apply scale-110 brightness-125;
+    box-shadow: var(--shadow-gold), var(--shadow-glow);
   }
 
-  /* Message Bubble */
+  .btn-gold:hover::before {
+    left: 100%;
+  }
+
+  /* Enhanced Message Bubble */
   .message-bubble {
-    @apply rounded-2xl px-4 py-3 max-w-[80%] break-words;
+    @apply rounded-3xl px-6 py-4 max-w-[80%] break-words;
     transition: var(--transition-smooth);
+    position: relative;
   }
 
   .message-user {
-    @apply bg-primary text-primary-foreground ml-auto;
-    box-shadow: var(--shadow-benjamin);
+    background: var(--gradient-benjamin);
+    @apply text-primary-foreground ml-auto;
+    box-shadow: var(--shadow-benjamin), var(--shadow-inset);
+    border: 1px solid hsla(130 40% 40% / 0.3);
   }
 
   .message-ai {
-    @apply bg-card text-card-foreground mr-auto border border-border;
+    @apply bg-card text-card-foreground mr-auto;
+    box-shadow: var(--shadow-chat);
+    border: 1px solid hsla(45 90% 60% / 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .message-ai.speaking {
+    box-shadow: var(--shadow-chat), var(--shadow-glow);
+    border-color: hsla(45 90% 60% / 0.3);
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Money Glow Effect */
+  .money-glow {
+    position: relative;
+  }
+
+  .money-glow::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: var(--gradient-glow);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .money-glow:hover::before {
+    opacity: 1;
+  }
+
+  /* Voice Button */
+  .voice-btn {
+    @apply relative overflow-hidden;
+    background: var(--gradient-money);
+    transition: var(--transition-bounce);
+  }
+
+  .voice-btn.listening {
+    animation: pulse-voice 1.5s ease-in-out infinite;
+    box-shadow: 0 0 30px hsla(45 90% 60% / 0.6);
   }
 }
 
 @layer utilities {
   @keyframes breathe {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.03) rotate(0.5deg); }
+    50% { transform: scale(1.05) rotate(0deg); }
+    75% { transform: scale(1.02) rotate(-0.5deg); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
 
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px);
     }
     to {
       opacity: 1;
@@ -183,7 +264,38 @@
     }
   }
 
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: var(--shadow-chat);
+    }
+    50% { 
+      box-shadow: var(--shadow-chat), var(--shadow-glow);
+    }
+  }
+
+  @keyframes pulse-voice {
+    0%, 100% { 
+      transform: scale(1);
+      box-shadow: 0 0 20px hsla(45 90% 60% / 0.4);
+    }
+    50% { 
+      transform: scale(1.05);
+      box-shadow: 0 0 40px hsla(45 90% 60% / 0.8);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
   .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, hsla(45 90% 60% / 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
   }
 }

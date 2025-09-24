@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX, Mic, MicOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: string;
@@ -12,36 +14,49 @@ interface Message {
 }
 
 export const ChatInterface = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Greetings! I am BenjaminAI, your wise digital advisor. Like my namesake, I'm here to share knowledge, wisdom, and practical counsel. What insights may I provide you today?",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  };
+  const { toast } = useToast();
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Welcome message
+    const welcomeMessage: Message = {
+      id: "welcome",
+      content: "Greetings! I am Benjamin Franklin, your financial advisor from the $100 bill. An investment in knowledge pays the best interest - how may I help grow your wealth today?",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+    setMessages([welcomeMessage]);
+    
+    // Play welcome voice after a short delay
+    setTimeout(() => {
+      playWelcomeMessage();
+    }, 1000);
+  }, []);
+
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollElement) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: Math.random().toString(36).substr(2, 9),
       content: input,
       sender: "user",
       timestamp: new Date(),
@@ -50,31 +65,86 @@ export const ChatInterface = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Get AI response from Benjamin
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('benjamin-ai-chat', {
+        body: { message: input }
+      });
+
+      if (aiError) throw aiError;
+
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: generateBenjaminResponse(input),
+        id: Math.random().toString(36).substr(2, 9),
+        content: aiData.message,
         sender: "ai",
         timestamp: new Date(),
       };
+
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1500);
+
+      // Generate voice if enabled
+      if (isVoiceEnabled) {
+        setIsSpeaking(true);
+        try {
+          const { data: voiceData, error: voiceError } = await supabase.functions.invoke('benjamin-voice', {
+            body: { text: aiData.message }
+          });
+
+          if (voiceError) throw voiceError;
+
+          // Play the audio
+          const audio = new Audio(`data:audio/mpeg;base64,${voiceData.audioContent}`);
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          await audio.play();
+        } catch (voiceError) {
+          console.error('Voice generation error:', voiceError);
+          setIsSpeaking(false);
+          toast({
+            title: "Voice Error",
+            description: "Could not generate voice. Check your ElevenLabs API key.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      setIsTyping(false);
+      toast({
+        title: "Chat Error",
+        description: "Could not get response from Benjamin. Check your API keys.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const generateBenjaminResponse = (userInput: string): string => {
-    const responses = [
-      "As I once said, 'An investment in knowledge pays the best interest.' Let me share some wisdom on this matter...",
-      "In my experience, both in life and in the founding of a nation, the key to this lies in understanding...",
-      "Much like electricity, this concept requires careful observation and practical application. Consider this...",
-      "From my years as a diplomat and inventor, I've learned that the solution often requires patience and ingenuity...",
-      "Remember, 'Well done is better than well said.' Here's my practical advice on your question...",
-    ];
+  const playWelcomeMessage = async () => {
+    const welcomeText = "Greetings! I am Benjamin Franklin, your financial advisor from the $100 bill. An investment in knowledge pays the best interest - how may I help grow your wealth today?";
     
-    return responses[Math.floor(Math.random() * responses.length)] + " " + 
-           "Your inquiry reminds me of the complexities we faced during the Constitutional Convention. Success requires both wisdom and action.";
+    if (isVoiceEnabled) {
+      try {
+        setIsSpeaking(true);
+        const { data: voiceData, error } = await supabase.functions.invoke('benjamin-voice', {
+          body: { text: welcomeText }
+        });
+
+        if (!error && voiceData?.audioContent) {
+          const audio = new Audio(`data:audio/mpeg;base64,${voiceData.audioContent}`);
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          await audio.play();
+        } else {
+          setIsSpeaking(false);
+        }
+      } catch (error) {
+        setIsSpeaking(false);
+      }
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -85,48 +155,73 @@ export const ChatInterface = () => {
   };
 
   return (
-    <div className="chat-overlay flex flex-col h-full rounded-2xl border border-border/20">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-6 border-b border-border/20">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-secondary" />
-          <h2 className="text-xl font-bold text-foreground">BenjaminAI</h2>
-        </div>
-        <div className="flex-1 text-right">
-          <span className="text-sm text-muted-foreground">
-            Wisdom from the Founding Father
-          </span>
+    <div className="h-full flex flex-col bg-background/60 backdrop-blur-xl rounded-3xl border border-border/50 chat-overlay money-glow">
+      {/* Premium Header */}
+      <div className="p-6 border-b border-border/30 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-3xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              💰 Benjamin Franklin AI
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Your ultimate money genius advisor
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+              className={`voice-btn ${isSpeaking ? 'listening' : ''}`}
+            >
+              {isVoiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
+            {isSpeaking && (
+              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-6">
-        <div className="space-y-4">
+      {/* Enhanced Messages */}
+      <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+        <div className="space-y-6">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} animate-fade-in-up`}
+              className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
                 className={`message-bubble ${
-                  message.sender === "user" ? "message-user" : "message-ai"
+                  message.sender === "user" ? "message-user" : 
+                  `message-ai ${isSpeaking && message.id === messages[messages.length - 1]?.id ? 'speaking' : ''}`
                 }`}
               >
-                <p className="text-sm leading-relaxed">{message.content}</p>
-                <span className="text-xs opacity-70 mt-2 block">
-                  {message.timestamp.toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </span>
+                {message.sender === "ai" && (
+                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                    <span>💵</span>
+                    <span>Benjamin Franklin</span>
+                    {isSpeaking && message.id === messages[messages.length - 1]?.id && (
+                      <Volume2 className="h-3 w-3 animate-pulse" />
+                    )}
+                  </div>
+                )}
+                <div className="leading-relaxed">{message.content}</div>
+                <div className="text-xs text-muted-foreground/70 mt-2">
+                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
               </div>
             </div>
           ))}
           
           {isTyping && (
-            <div className="flex justify-start animate-fade-in-up">
+            <div className="flex justify-start">
               <div className="message-bubble message-ai">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                  <span>💵</span>
+                  <span>Benjamin Franklin</span>
+                </div>
+                <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-secondary rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
                   <div className="w-2 h-2 bg-secondary rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
@@ -137,28 +232,37 @@ export const ChatInterface = () => {
         </div>
       </ScrollArea>
 
-      {/* Input */}
-      <div className="p-6 border-t border-border/20">
-        <div className="flex gap-3">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask Benjamin for wisdom..."
-            className="flex-1 bg-input border-border focus:ring-ring"
-            disabled={isTyping}
-          />
-          <Button
+      {/* Premium Input */}
+      <div className="p-6 border-t border-border/30 bg-gradient-to-r from-background/50 to-background/30 rounded-b-3xl">
+        <div className="flex space-x-3">
+          <div className="flex-1 relative">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask Benjamin about money, investments, financial wisdom..."
+              className="bg-background/70 border-border/50 focus:border-secondary rounded-2xl pr-12 h-12 text-base placeholder:text-muted-foreground/60"
+              disabled={isLoading}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <span className="text-xs text-muted-foreground">💰</span>
+            </div>
+          </div>
+          <Button 
             onClick={handleSend}
-            disabled={!input.trim() || isTyping}
-            className="btn-gold text-accent-foreground font-semibold px-6"
+            disabled={isLoading || !input.trim()}
+            className="btn-gold px-8 h-12 rounded-2xl font-semibold"
           >
-            <Send className="w-4 h-4" />
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+            ) : (
+              "Send"
+            )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2 text-center">
-          Ask about life, business, science, or any matter requiring wisdom
-        </p>
+        <div className="mt-3 text-xs text-muted-foreground/70 text-center">
+          💡 Tip: Ask about budgeting, investing, side hustles, or financial planning
+        </div>
       </div>
     </div>
   );
